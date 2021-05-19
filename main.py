@@ -27,11 +27,11 @@ async def on_message(message):
         print(msg_content)
         [interval, url] = msg_content.split(" ")
         querier = ScoreQuery(url, float(interval), message.channel, asyncio.get_event_loop())
-        await message.channel.send(f'Started following {url}')
+        await message.channel.send(f'Started following <{url}>')
     
     if message.content.startswith('$delurl'):
         querier.clear()
-        await message.channel.send(f'Stopped following {url}')
+        await message.channel.send(f'Stopped following <{url}>')
 
 
 client.run(os.getenv('BOT_TOKEN'))
