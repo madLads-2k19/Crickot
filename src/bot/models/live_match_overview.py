@@ -5,6 +5,7 @@ from src.bot.models.team_name import TeamName
 class LiveMatchOverview:
     def __init__(self, cardHtml):
         self.url = cardHtml.find('a', class_="match-info-link-HSB")["href"]
+        # print("Processed URL: ", self.url)
         matchInfoHtml = cardHtml.find('div', class_="match-info")
         statusData = matchInfoHtml.find('div', class_="status")
 
@@ -31,8 +32,28 @@ class LiveMatchOverview:
 
         [self.team1, self.team2] = [TeamName(data) for data in teamsData]
 
-        [self.team1score, self.team2score] = [TeamScore(teamData.find('div', class_='score-detail')) for teamData in
-                                              teamsData]
+        # [self.team1score, self.team2score] = [TeamScore() for teamData in
+        #                                       teamsData]
+
+        self.team1Scores = []
+        self.team2Scores = []
+
+        teamScoreDataHtml1 = teamsData[0].find('div', class_='score-detail')
+        if teamScoreDataHtml1:
+            if TeamScore.multipleScores(teamScoreDataHtml1):
+                self.team1Scores.append(TeamScore(teamScoreDataHtml1, 1))
+                self.team1Scores.append(TeamScore(teamScoreDataHtml1, 2))
+            else:
+                self.team1Scores.append(TeamScore(teamScoreDataHtml1))
+        
+        teamScoreDataHtml2 = teamsData[1].find('div', class_='score-detail')
+        if teamScoreDataHtml2:
+            if TeamScore.multipleScores(teamScoreDataHtml2):
+                self.team2Scores.append(TeamScore(teamScoreDataHtml2, 1))
+                self.team2Scores.append(TeamScore(teamScoreDataHtml2, 2))
+            else:
+                self.team2Scores.append(TeamScore(teamScoreDataHtml2))
+
 
         self.footer = matchInfoHtml.find('div', class_='status-text').find('span').text
 
@@ -40,9 +61,17 @@ class LiveMatchOverview:
         name = f"{self.team1.get_abbr()}   :vs:   {self.team2.get_abbr()}"
 
         if self.team1.batting:
-            value = self.team1score.long_str_repr()
+            value = self.team1Scores[0].long_str_repr()
+
+            if len(self.team1Scores) == 2:
+                value += " & " + self.team1Scores[1].long_str_repr()
+
         elif self.team2.batting:
-            value = self.team2score.long_str_repr()
+            value = self.team2Scores[0].long_str_repr()
+
+            if len(self.team2Scores) == 2:
+                value += " & " + self.team2Scores[1].long_str_repr()
+
         else:
             if self.team1.won:
                 value = self.team1.get_abbr() + "  :trophy:"
@@ -50,6 +79,8 @@ class LiveMatchOverview:
                 value = self.team2.get_abbr() + "  :trophy:"
             else:
                 value = self.status
+                if value == "Result":
+                    value = self.footer
 
         value += "\n" + self.location
 

@@ -1,27 +1,26 @@
 from discord.ext import commands
+import discord
 from dotenv import load_dotenv
 load_dotenv()
+from cogwatch import watch
 import os
 
 from src.bot.cogs.livematch import LiveMatch
 
-bot = commands.Bot(command_prefix = '$')
+class Crickot(commands.Bot):
 
-@bot.command()
-async def test(ctx, arg):
+    def __init__(self):
+        super().__init__(command_prefix = '$')
+    
+    # @watch(path = 'src')
+    async def on_ready(self):
+        print("Crickot is up!")
+
+async def test(ctx):
     msg = await ctx.send(arg)
-    print(type(msg))
-    print(msg)
-    mid = msg.id
-    import time
-    time.sleep(10)
-    newMsg = await msg.channel.fetch_message(mid)
-    print(newMsg.reactions)
+
+bot = Crickot()
 
 bot.add_cog(LiveMatch(bot))
-
-@bot.event
-async def on_ready():
-    print("Crickot is up")
 
 bot.run(os.getenv("BOT_TOKEN"))

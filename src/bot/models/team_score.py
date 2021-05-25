@@ -1,5 +1,13 @@
 class TeamScore:
-    def __init__(self, teamScoreHtml):
+
+    @staticmethod
+    def multipleScores(teamScoreHtml):
+        score = teamScoreHtml.find('span', class_='score').text
+        if '&' in score:
+            return True
+        return False
+
+    def __init__(self, teamScoreHtml, scoreNum=False):
         self.validScore = False
         # print(teamScoreHtml)
         if teamScoreHtml:
@@ -7,6 +15,11 @@ class TeamScore:
             self.oversData = teamScoreHtml.find('span', class_='score-info').text
             # print(teamScoreHtml.find('span', class_ = 'score'))
             score = teamScoreHtml.find('span', class_='score').text
+            # print("Handling score: ", score)
+            if scoreNum:
+                scoreNum -= 1
+                score = score.split('&')[scoreNum]
+
             if '/' in score:
                 [self.runs, self.wickets] = score.split('/')
             else:
