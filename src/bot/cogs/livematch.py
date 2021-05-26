@@ -9,7 +9,7 @@ from src.bot.models.live_match_overview import LiveMatchOverview
 
 
 numberEmojis = {'1️⃣' : 1, '2️⃣' : 2, '3️⃣' : 3, '4️⃣' : 4, '5️⃣' : 5, '6️⃣' : 6, '7️⃣' : 7, '8️⃣' : 8, '9️⃣' : 9}
-maxDiff = datetime.timedelta(minutes = 10)
+maxDiff = datetime.timedelta(minutes = 1)
 istTimeZone = pytz.timezone('Asia/Kolkata')
 standardDateTimeFormat = "%Y-%m-%d %H:%M:%S"
 
@@ -51,17 +51,27 @@ class LiveMatch(commands.Cog):
     async def on_reaction_add(self, reaction, user):
         emoji = str(reaction.emoji)
         
-        if emoji in numberEmojis.keys():
-            print("Number found")
-            embed = reaction.message.embeds[0]
-            embedFooter = embed.footer.text
-            embedDate = embedFooter[embedFooter.index(':') + 1 : -5]
-            print(embedDate)
-            embedDate = datetime.datetime.strptime(embedDate, standardDateTimeFormat)
-            if reaction.message in self.embedMessages:
-                if not self.urls:
-                    raise Exception("URL list does not exist")
-                if datetime.datetime.now() - embedDate > maxDiff:
-                    raise Exception("Outdated Embed")
-                # print(self.urls)
-                print(self.urls[numberEmojis[emoji] - 1])
+        if emoji not in numberEmojis.keys():
+            return
+
+        print("Number found")
+        embed = reaction.message.embeds[0]
+        embedFooter = embed.footer.text
+        embedDate = embedFooter[embedFooter.index(':') + 1 : -5]
+        embedDate = datetime.datetime.strptime(embedDate, standardDateTimeFormat)
+        curChannel = reaction.message.channel
+
+        if reaction.message not in self.embedMessages:
+            return
+
+        if not self.urls:
+            await curChannel.send("Internal error")
+            raise Exception("URL list does not exist")
+            return
+
+        if datetime.datetime.now() - embedDate > maxDiff:
+            await curChannel.send("The embed that you are attempting to react to is outdated. Use $live to obtain an updated list")
+            return
+
+        fullUrl = self.urls[numberEmojis[emoji] - 1]
+        pageUrl = fullUrl[ : fullUrl.rindex('/')]
