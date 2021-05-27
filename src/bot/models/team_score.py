@@ -40,3 +40,9 @@ class TeamScore:
             if self.wickets == 10:
                 return f"{self.runs} all out {self.oversData}"
             return f"{self.runs}/{self.wickets} {self.oversData}"
+
+    def __str__(self):
+        return self.long_str_repr()
+    
+    def __repr__(self):
+        return str(self)

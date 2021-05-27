@@ -2,9 +2,9 @@ from bs4 import BeautifulSoup
 import aiohttp
 import os
 
-class QueryCricketData:
+class QueryLiveOverviews:
     @staticmethod
-    async def query_live_matches():
+    async def query_live_overviews():
         url = os.getenv("MAIN_URL")
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:

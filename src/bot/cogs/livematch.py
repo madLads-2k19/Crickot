@@ -2,28 +2,30 @@ import datetime
 import pytz
 from discord.ext import commands
 import discord
-from src.dependencies.bs4.query_data import QueryCricketData
+
+from src.dependencies.bs4.query_live_overview import QueryLiveOverviews
+from src.dependencies.bs4.query_live_match import QueryLiveMatch
+
 from src.bot.models.live_match_overview import LiveMatchOverview
+from src.bot.models.live_match_data import LiveMatchData
+
+from src.config import Settings
+
+SETTINGS = Settings.get_settings()
 
 # Cog for live Matches
-
-
-numberEmojis = {'1️⃣' : 1, '2️⃣' : 2, '3️⃣' : 3, '4️⃣' : 4, '5️⃣' : 5, '6️⃣' : 6, '7️⃣' : 7, '8️⃣' : 8, '9️⃣' : 9}
-maxDiff = datetime.timedelta(minutes = 1)
-istTimeZone = pytz.timezone('Asia/Kolkata')
-standardDateTimeFormat = "%Y-%m-%d %H:%M:%S"
 
 class LiveMatch(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.embedMessages = []
-        self.urls = []
+        self.live_overviews = []
 
     @commands.command()
     async def live(self, ctx):
         
-        cardsHtml = await QueryCricketData.query_live_matches()
-        live_overviews = [LiveMatchOverview(card) for card in cardsHtml]
+        cardsHtml = await QueryLiveOverviews.query_live_overviews()
+        self.live_overviews = [LiveMatchOverview(card) for card in cardsHtml]
 
         embed = {
             "title": ":cricket_game:  Live Cricket Matches  :cricket_game:",
@@ -31,47 +33,70 @@ class LiveMatch(commands.Cog):
             "fields": [],
             "color": 65484,
             "provider": {"name": "ESPNCricinfo", "url": "https://www.espncricinfo.com"},
-            "footer": {"text": f"Valid for 10 minutes. (Generation Time:{datetime.datetime.now().strftime(standardDateTimeFormat)} IST)"}
+            "footer": {"text": f"Valid for 10 minutes. (Generation Time:{datetime.datetime.now().strftime(SETTINGS['botDateTimeFormat'])} IST)"}
         }
-
-        refreshUrls = False
-        if not self.urls:
-            refreshUrls = True
         
-        for live_overview in live_overviews:
-            if refreshUrls:
-                self.urls.append(live_overview.url)
+        for live_overview in self.live_overviews:
             embed["fields"].append(live_overview.get_embed_field())
         
         embedData = discord.Embed.from_dict(embed)
         message = await ctx.send(embed=embedData)
+
         self.embedMessages.append(message)
+
+        i = 0
+        while i < len(self.live_overviews) and i <= 8:
+            if self.live_overviews[i].is_live():
+                await message.add_reaction(SETTINGS["numberToEmoji"][str(i+1)])
+            i += 1
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        emoji = str(reaction.emoji)
-        
-        if emoji not in numberEmojis.keys():
+        if self.bot.user.id == user.id:
             return
 
-        print("Number found")
+        emoji = str(reaction.emoji)
+
+        if emoji not in SETTINGS["emojiToNumber"].keys():
+            return
+
         embed = reaction.message.embeds[0]
         embedFooter = embed.footer.text
         embedDate = embedFooter[embedFooter.index(':') + 1 : -5]
-        embedDate = datetime.datetime.strptime(embedDate, standardDateTimeFormat)
+        embedDate = datetime.datetime.strptime(embedDate, SETTINGS["botDateTimeFormat"])
         curChannel = reaction.message.channel
 
         if reaction.message not in self.embedMessages:
             return
 
-        if not self.urls:
+        if not self.live_overviews:
             await curChannel.send("Internal error")
             raise Exception("URL list does not exist")
-            return
+        
+        maxDiffTime = datetime.timedelta(minutes = SETTINGS["maxDiffMinutes"])
 
-        if datetime.datetime.now() - embedDate > maxDiff:
+        if datetime.datetime.now() - embedDate > maxDiffTime:
             await curChannel.send("The embed that you are attempting to react to is outdated. Use $live to obtain an updated list")
             return
 
-        fullUrl = self.urls[numberEmojis[emoji] - 1]
+        try:
+            selectedMatch = self.live_overviews[SETTINGS["emojiToNumber"][emoji] - 1]
+        except IndexError:
+            return
+
+        if not selectedMatch.is_live():
+            if "IST" in selectedMatch.status:
+                await curChannel.send("Selected match is not currently live, the match will start at " + selectedMatch.status)
+            else:
+                await curChannel.send("The selected match is not currently live.")
+            return
+
+        fullUrl = selectedMatch.url
         pageUrl = fullUrl[ : fullUrl.rindex('/')]
+        livePageUrl = pageUrl + "/live-cricket-score"
+        result = await QueryLiveMatch.query_live_match(livePageUrl)
+        embed =  LiveMatchData(*result).get_embed()
+        await curChannel.send(embed = discord.Embed.from_dict(embed))
+
+def setup(bot):
+    bot.add_cog(LiveMatch(bot))

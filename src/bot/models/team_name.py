@@ -8,7 +8,7 @@ class TeamName:
         if teamNameHtml.find("i", class_ = "winner-icon"):
             self.won = True
     
-    def get_abbr(self):
+    def get_abbr(self, display : bool = False):
         if ' ' in self.name:
             abbr = ''
             for word in self.name.split(' '):
@@ -16,6 +16,12 @@ class TeamName:
         else:
             abbr = self.name[:3].upper()
 
-        if self.batting:
+        if display and self.batting:
             return f"__{abbr}__"
         return abbr
+
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return str(self)

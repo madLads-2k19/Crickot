@@ -2,8 +2,9 @@ from discord.ext import commands
 import discord
 from dotenv import load_dotenv
 load_dotenv()
-from cogwatch import watch
 import os
+
+from src.config import Settings
 
 from src.bot.cogs.livematch import LiveMatch
 
@@ -12,15 +13,23 @@ class Crickot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix = '$')
     
-    # @watch(path = 'src')
     async def on_ready(self):
         print("Crickot is up!")
-
-async def test(ctx):
-    msg = await ctx.send(arg)
+    
+    # @commands.command()
+    async def re(self):
+        self.unload_extension("src.bot.livematch")
+        self.load_extension("src.bot.livematch")
 
 bot = Crickot()
 
-bot.add_cog(LiveMatch(bot))
+@bot.command()
+async def re(ctx):
+    bot.unload_extension("src.bot.cogs.livematch")
+    bot.load_extension("src.bot.cogs.livematch")
 
-bot.run(os.getenv("BOT_TOKEN"))
+if __name__ == "__main__":
+    for cog in Settings.get_settings()["cogNames"]:
+        bot.load_extension(cog)
+
+    bot.run(os.getenv("BOT_TOKEN"))

@@ -1,6 +1,10 @@
 from src.bot.models.team_score import TeamScore
 from src.bot.models.team_name import TeamName
+from src.config import Settings
 
+SETTINGS = Settings.get_settings()
+import datetime
+import pytz
 
 class LiveMatchOverview:
     def __init__(self, cardHtml):
@@ -13,7 +17,14 @@ class LiveMatchOverview:
         if "(" in status:
             bracketIndex = status.index("(")
             status = status[:bracketIndex]
-        self.status = status.title()
+        
+        try:
+            matchDateTime = datetime.datetime.strptime(status, SETTINGS["websiteDateTimeFormat"])
+            locTime = pytz.utc.localize(matchDateTime).astimezone(pytz.timezone('Asia/Kolkata'))
+            self.status = locTime.strftime(SETTINGS["botDateTimeFormat"]) + " IST"
+
+        except ValueError:
+            self.status = status.title()        
 
         descriptionData = statusData.find('span', class_="hsb-description").text.split("\N{BULLET}")
         # print(descriptionData)
@@ -31,9 +42,6 @@ class LiveMatchOverview:
         teamsData = matchInfoHtml.find_all('div', class_='team')
 
         [self.team1, self.team2] = [TeamName(data) for data in teamsData]
-
-        # [self.team1score, self.team2score] = [TeamScore() for teamData in
-        #                                       teamsData]
 
         self.team1Scores = []
         self.team2Scores = []
@@ -58,7 +66,7 @@ class LiveMatchOverview:
         self.footer = matchInfoHtml.find('div', class_='status-text').find('span').text
 
     def get_embed_field(self):
-        name = f"{self.team1.get_abbr()}   :vs:   {self.team2.get_abbr()}"
+        name = f"{self.team1.get_abbr(display = True)}   :vs:   {self.team2.get_abbr(display = True)}"
 
         if self.team1.batting:
             value = self.team1Scores[0].long_str_repr()
@@ -77,10 +85,10 @@ class LiveMatchOverview:
                 value = self.team1.get_abbr() + "  :trophy:"
             elif self.team2.won:
                 value = self.team2.get_abbr() + "  :trophy:"
+            elif self.status == "Result":
+                value = self.footer
             else:
                 value = self.status
-                if value == "Result":
-                    value = self.footer
 
         value += "\n" + self.location
 
@@ -92,3 +100,7 @@ class LiveMatchOverview:
         name = "\t\t" + name
         value = "\t\t" + value
         return {'name': name, 'value': value, 'inline': True}
+
+    def is_live(self):
+        # print(self.status)
+        return  (self.status != "Result" and ":" not in self.status)
