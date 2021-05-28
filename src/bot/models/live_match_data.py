@@ -51,15 +51,15 @@ class LiveMatchData:
         scoreValue = "Nothing here yet"
         if self.team1Scores:
             if len(self.team1Scores) == 2:
-                scoreValue = f"\n{self.team1}: {self.team1Scores[0] & self.team1Scores[1]}"
+                scoreValue = f"{self.team1}: {self.team1Scores[0] & self.team1Scores[1]}"
             if len(self.team1Scores) == 1:
-                scoreValue = f"\n{self.team1}: {self.team1Scores[0]}"
+                scoreValue = f"{self.team1}: {self.team1Scores[0]}"
         
         if self.team2Scores:
             if len(self.team2Scores) == 2:
-                scoreValue += f"{self.team2}: {self.team2Scores[0] & self.team2Scores[1]}"
+                scoreValue += f"\n{self.team2}: {self.team2Scores[0] & self.team2Scores[1]}"
             if len(self.team2Scores) == 1:
-                scoreValue += f"{self.team2}: {self.team2Scores[0]}"
+                scoreValue += f"\n{self.team2}: {self.team2Scores[0]}"
             
         batterValue = ""
         for batter in self.batters:

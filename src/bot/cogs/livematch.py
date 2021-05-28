@@ -11,6 +11,8 @@ from src.bot.models.live_match_data import LiveMatchData
 
 from src.config import Settings
 
+from timer import Timer
+
 SETTINGS = Settings.get_settings()
 
 # Cog for live Matches
@@ -23,9 +25,13 @@ class LiveMatch(commands.Cog):
 
     @commands.command()
     async def live(self, ctx):
-        
+        Timer.setStartTime()
+
         cardsHtml = await QueryLiveOverviews.query_live_overviews()
+
+        Timer.checkpoint("Query done, beginning parsing")
         self.live_overviews = [LiveMatchOverview(card) for card in cardsHtml]
+        Timer.checkpoint("Completed parsing all cards, beginning to fetch embeds")
 
         embed = {
             "title": ":cricket_game:  Live Cricket Matches  :cricket_game:",
@@ -39,8 +45,15 @@ class LiveMatch(commands.Cog):
         for live_overview in self.live_overviews:
             embed["fields"].append(live_overview.get_embed_field())
         
+        Timer.checkpoint("Fetched all embeds")
+
         embedData = discord.Embed.from_dict(embed)
+
+        Timer.checkpoint("Embed dictionary constructed")
+
         message = await ctx.send(embed=embedData)
+
+        Timer.checkpoint("Embed sent")
 
         self.embedMessages.append(message)
 
