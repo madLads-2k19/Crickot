@@ -1,6 +1,6 @@
 import datetime
 import pytz
-from discord.ext import commands
+from discord.ext import commands, tasks
 import discord
 
 from src.dependencies.bs4.query_live_overview import QueryLiveOverviews
@@ -8,10 +8,9 @@ from src.dependencies.bs4.query_live_match import QueryLiveMatch
 
 from src.bot.models.live_match_overview import LiveMatchOverview
 from src.bot.models.live_match_data import LiveMatchData
+from src.bot.models.url_request import UrlRequest
 
 from src.config import Settings
-
-from timer import Timer
 
 SETTINGS = Settings.get_settings()
 
@@ -22,16 +21,17 @@ class LiveMatch(commands.Cog):
         self.bot = bot
         self.embedMessages = []
         self.live_overviews = []
+        
+        self.url_requests = []
+
+        self.update_alerts.start()
 
     @commands.command()
     async def live(self, ctx):
-        Timer.setStartTime()
 
         cardsHtml = await QueryLiveOverviews.query_live_overviews()
 
-        Timer.checkpoint("Query done, beginning parsing")
         self.live_overviews = [LiveMatchOverview(card) for card in cardsHtml]
-        Timer.checkpoint("Completed parsing all cards, beginning to fetch embeds")
 
         embed = {
             "title": ":cricket_game:  Live Cricket Matches  :cricket_game:",
@@ -45,15 +45,11 @@ class LiveMatch(commands.Cog):
         for live_overview in self.live_overviews:
             embed["fields"].append(live_overview.get_embed_field())
         
-        Timer.checkpoint("Fetched all embeds")
 
         embedData = discord.Embed.from_dict(embed)
 
-        Timer.checkpoint("Embed dictionary constructed")
 
         message = await ctx.send(embed=embedData)
-
-        Timer.checkpoint("Embed sent")
 
         self.embedMessages.append(message)
 
@@ -107,9 +103,16 @@ class LiveMatch(commands.Cog):
         fullUrl = selectedMatch.url
         pageUrl = fullUrl[ : fullUrl.rindex('/')]
         livePageUrl = pageUrl + "/live-cricket-score"
-        result = await QueryLiveMatch.query_live_match(livePageUrl)
-        embed =  LiveMatchData(*result).get_embed()
-        await curChannel.send(embed = discord.Embed.from_dict(embed))
+        
+        new_url_req = UrlRequest(livePageUrl)
+        await new_url_req.append(curChannel)
+        self.url_requests.append(new_url_req)
+
+    @tasks.loop(seconds = 20.0)
+    async def update_alerts(self):
+        await self.bot.wait_until_ready()
+        for url_req in self.url_requests:
+            await url_req.query_and_update()
 
 def setup(bot):
     bot.add_cog(LiveMatch(bot))

@@ -1,13 +1,11 @@
 from bs4 import BeautifulSoup
 import aiohttp
 import os
-from timer import Timer
 
 class QueryLiveOverviews:
     @staticmethod
     async def query_live_overviews():
         url = os.getenv("MAIN_URL")
-        Timer.checkpoint("Starting query of website")
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 html = await response.text()

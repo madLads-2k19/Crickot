@@ -3,6 +3,8 @@ from src.bot.models.team_name import TeamName
 from src.bot.models.batter import Batter
 from src.bot.models.bowler import Bowler
 
+import discord
+
 class LiveMatchData:
 
     def __init__(self, matchHeader, liveScorecard):
@@ -51,13 +53,13 @@ class LiveMatchData:
         scoreValue = "Nothing here yet"
         if self.team1Scores:
             if len(self.team1Scores) == 2:
-                scoreValue = f"{self.team1}: {self.team1Scores[0] & self.team1Scores[1]}"
+                scoreValue = f"{self.team1}: {self.team1Scores[0]} & {self.team1Scores[1]}"
             if len(self.team1Scores) == 1:
                 scoreValue = f"{self.team1}: {self.team1Scores[0]}"
         
         if self.team2Scores:
             if len(self.team2Scores) == 2:
-                scoreValue += f"\n{self.team2}: {self.team2Scores[0] & self.team2Scores[1]}"
+                scoreValue += f"\n{self.team2}: {self.team2Scores[0]} & {self.team2Scores[1]}"
             if len(self.team2Scores) == 1:
                 scoreValue += f"\n{self.team2}: {self.team2Scores[0]}"
             
@@ -92,4 +94,4 @@ class LiveMatchData:
             "color": 65484,
             "provider": {"name": "ESPNCricinfo", "url": "https://www.espncricinfo.com"},
         }
-        return embed
+        return discord.Embed.from_dict(embed)
