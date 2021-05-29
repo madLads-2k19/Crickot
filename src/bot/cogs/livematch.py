@@ -34,7 +34,7 @@ class LiveMatch(commands.Cog):
         self.live_overviews = [LiveMatchOverview(card) for card in cardsHtml]
 
         embed = {
-            "title": ":cricket_game:  Live Cricket Matches  :cricket_game:",
+            "title": ":cricket_game:  Live Cricket Matches !!!  :cricket_game:",
             "description": "The Live Cricket Matches happening around the world!",
             "fields": [],
             "color": 65484,
@@ -102,9 +102,8 @@ class LiveMatch(commands.Cog):
 
         fullUrl = selectedMatch.url
         pageUrl = fullUrl[ : fullUrl.rindex('/')]
-        livePageUrl = pageUrl + "/live-cricket-score"
         
-        new_url_req = UrlRequest(livePageUrl)
+        new_url_req = UrlRequest(pageUrl)
         await new_url_req.append(curChannel)
         self.url_requests.append(new_url_req)
 
@@ -113,6 +112,8 @@ class LiveMatch(commands.Cog):
         await self.bot.wait_until_ready()
         for url_req in self.url_requests:
             await url_req.query_and_update()
+        
+
 
 def setup(bot):
     bot.add_cog(LiveMatch(bot))

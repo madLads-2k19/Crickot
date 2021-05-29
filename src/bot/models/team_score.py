@@ -1,24 +1,27 @@
 class TeamScore:
 
+    # a method that checks whether there are multiple scores present
     @staticmethod
     def multipleScores(teamScoreHtml):
         score = teamScoreHtml.find('span', class_='score').text
-        if '&' in score:
-            return True
-        return False
+        return '&' in score
 
     def __init__(self, teamScoreHtml, scoreNum=False):
         self.validScore = False
         # print(teamScoreHtml)
         if teamScoreHtml:
             self.validScore = True
-            self.oversData = teamScoreHtml.find('span', class_='score-info').text
+            self.oversData = ""
             # print(teamScoreHtml.find('span', class_ = 'score'))
             score = teamScoreHtml.find('span', class_='score').text
             # print("Handling score: ", score)
             if scoreNum:
+                if scoreNum == 2:  # the overs data corresponds to the second score, not the first
+                    self.oversData = teamScoreHtml.find('span', class_='score-info').text
                 scoreNum -= 1
                 score = score.split('&')[scoreNum]
+            else:
+                self.oversData = teamScoreHtml.find('span', class_='score-info').text
 
             if '/' in score:
                 [self.runs, self.wickets] = score.split('/')
