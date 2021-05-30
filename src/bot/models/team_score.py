@@ -9,25 +9,35 @@ class TeamScore:
     def __init__(self, teamScoreHtml, scoreNum=False):
         self.validScore = False
         # print(teamScoreHtml)
-        if teamScoreHtml:
-            self.validScore = True
-            self.oversData = ""
-            # print(teamScoreHtml.find('span', class_ = 'score'))
-            score = teamScoreHtml.find('span', class_='score').text
-            # print("Handling score: ", score)
-            if scoreNum:
-                if scoreNum == 2:  # the overs data corresponds to the second score, not the first
-                    self.oversData = teamScoreHtml.find('span', class_='score-info').text
-                scoreNum -= 1
-                score = score.split('&')[scoreNum]
-            else:
+        if not teamScoreHtml:
+            return
+        
+        self.validScore = True
+        self.oversData = ""
+        self.fo = False
+        fo = False
+        # print(teamScoreHtml.find('span', class_ = 'score'))
+        score = teamScoreHtml.find('span', class_='score').text
+        if score.startswith("(f/o)"):
+            fo = True
+            score = score[5:]
+        # print("Handling score: ", score)
+        if scoreNum:
+            if scoreNum == 2:  # the overs data corresponds to the second score, not the first
                 self.oversData = teamScoreHtml.find('span', class_='score-info').text
+                self.fo = fo
+            scoreNum -= 1
+            score = score.split('&')[scoreNum]
+        else:
+            self.oversData = teamScoreHtml.find('span', class_='score-info').text
 
-            if '/' in score:
-                [self.runs, self.wickets] = score.split('/')
-            else:
-                self.runs = score
-                self.wickets = 10
+        if '/' in score:
+            [self.runs, self.wickets] = score.split('/')
+            self.wickets = int(self.wickets[0])
+
+        else:
+            self.runs = score
+            self.wickets = 10
 
     def __bool__(self):
         return self.validScore

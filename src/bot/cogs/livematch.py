@@ -104,6 +104,7 @@ class LiveMatch(commands.Cog):
         pageUrl = fullUrl[ : fullUrl.rindex('/')]
         
         new_url_req = UrlRequest(pageUrl)
+        await new_url_req.init_update_mgr()
         await new_url_req.append(curChannel)
         self.url_requests.append(new_url_req)
 

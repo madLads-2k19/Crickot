@@ -11,6 +11,7 @@ class QueryScorecard:
                 html = await response.text()
                 soup = BeautifulSoup(html, 'html.parser')
 
+                matchHeader = soup.find("div", class_ = "match-header")
                 scorecards = soup.find_all("div", class_ = "match-scorecard-table")
                 latest_scorecard = scorecards[-2]
-                return latest_scorecard
+                return matchHeader, latest_scorecard

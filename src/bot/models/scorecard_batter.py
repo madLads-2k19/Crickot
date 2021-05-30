@@ -15,7 +15,7 @@ class ScorecardBatter:
         # print(self)
 
     def __str__(self):
-        return f"{self.name} {self.dismissDetail} {self.runs} {self.balls_faced}"
+        return f"{self.name} {self.dismissDetail} {self.runs} ({self.balls_faced})"
 
     def __repr__(self):
         return str(self)

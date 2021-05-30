@@ -3,8 +3,6 @@ from src.bot.models.team_name import TeamName
 from src.bot.models.batter import Batter
 from src.bot.models.bowler import Bowler
 
-import discord
-
 class LiveMatchData:
 
     def __init__(self, matchHeader, liveScorecard):
@@ -94,4 +92,4 @@ class LiveMatchData:
             "color": 65484,
             "provider": {"name": "ESPNCricinfo", "url": "https://www.espncricinfo.com"},
         }
-        return discord.Embed.from_dict(embed)
+        return embed
