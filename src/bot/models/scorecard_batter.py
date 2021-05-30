@@ -12,7 +12,7 @@ class ScorecardBatter:
 
         self.balls_faced = batterCols[3].text
 
-        print(self)
+        # print(self)
 
     def __str__(self):
         return f"{self.name} {self.dismissDetail} {self.runs} {self.balls_faced}"

@@ -33,5 +33,7 @@
 
     "websiteDateTimeFormat": "%d-%b-%Y, %H:%M %p",
 
-    "cogNames": ["src.bot.cogs.livematch"]
+    "cogNames": ["src.bot.cogs.livematch"],
+
+    "taskLoopMinutes": 1.0
 }
