@@ -4,33 +4,34 @@ from src.bot.models.live_match_data import LiveMatchData
 from src.bot.models.scorecard import Scorecard
 from src.bot.update.update_manager import UpdateManager
 import discord
+from asyncinit import asyncinit
 
+@asyncinit
 class UrlRequest:
 
-    async def getEmbed(self):
-        liveUrl = self.url + "/live-cricket-score"
-        result = await QueryLiveMatch.query_live_match(liveUrl)
-        embed =  LiveMatchData(*result).get_embed()
-
-        scorecardUrl = self.url + "/full-scorecard"
-        matchHeader, scorecardHtml = await QueryScorecard().query_latest_scorecard(scorecardUrl)
-        scorecard = Scorecard(matchHeader, scorecardHtml)
-
-        updateFields = self.update_mgr.get_update_fields(scorecard)
-        if updateFields:
-            embed["fields"].extend(updateFields)
-        return discord.Embed.from_dict(embed)
-
-    def __init__(self, url):
+    async def __init__(self, url):
         self.url = url
         self.messages = []
     
-    async def init_update_mgr(self):
         scorecardUrl = self.url + "/full-scorecard"
         matchHeader, scorecardHtml = await QueryScorecard().query_latest_scorecard(scorecardUrl)
         scorecard = Scorecard(matchHeader, scorecardHtml)
         self.update_mgr = UpdateManager(self.url, scorecard)
     
+    async def getEmbed(self):
+            liveUrl = self.url + "/live-cricket-score"
+            result = await QueryLiveMatch.query_live_match(liveUrl)
+            embed =  LiveMatchData(*result).get_embed()
+
+            scorecardUrl = self.url + "/full-scorecard"
+            matchHeader, scorecardHtml = await QueryScorecard().query_latest_scorecard(scorecardUrl)
+            scorecard = Scorecard(matchHeader, scorecardHtml)
+
+            updateFields = self.update_mgr.get_update_fields(scorecard)
+            if updateFields:
+                embed["fields"].extend(updateFields)
+            return discord.Embed.from_dict(embed)
+
     async def append(self, channel):
         embed = await self.getEmbed()
         message = await channel.send(embed = embed)

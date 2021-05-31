@@ -103,12 +103,12 @@ class LiveMatch(commands.Cog):
         fullUrl = selectedMatch.url
         pageUrl = fullUrl[ : fullUrl.rindex('/')]
         
-        new_url_req = UrlRequest(pageUrl)
-        await new_url_req.init_update_mgr()
+        new_url_req = await UrlRequest(pageUrl)
         await new_url_req.append(curChannel)
         self.url_requests.append(new_url_req)
 
-    @tasks.loop(minutes = SETTINGS["taskLoopMinutes"])
+    # @tasks.loop(minutes = SETTINGS["taskLoopMinutes"])
+    @tasks.loop(seconds = 20)
     async def update_alerts(self):
         await self.bot.wait_until_ready()
         for url_req in self.url_requests:

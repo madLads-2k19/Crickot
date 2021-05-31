@@ -12,7 +12,10 @@ class ScorecardBatter:
 
         self.balls_faced = batterCols[3].text
 
-        # print(self)
+        print(self)
+    
+    def __eq__(self, other):
+        return self.name == other.name
 
     def __str__(self):
         return f"{self.name} {self.dismissDetail} {self.runs} ({self.balls_faced})"

@@ -103,4 +103,4 @@ class LiveMatchOverview:
 
     def is_live(self):
         # print(self.status)
-        return  (self.status != "Result" and ":" not in self.status)
+        return  ("Result" not in self.status and ":" not in self.status)
