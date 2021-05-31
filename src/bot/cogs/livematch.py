@@ -34,7 +34,7 @@ class LiveMatch(commands.Cog):
         self.live_overviews = [LiveMatchOverview(card) for card in cardsHtml]
 
         embed = {
-            "title": ":cricket_game:  Live Cricket Matches !!!  :cricket_game:",
+            "title": ":cricket_game:  Live Cricket Matches :cricket_game:",
             "description": "The Live Cricket Matches happening around the world!",
             "fields": [],
             "color": 65484,

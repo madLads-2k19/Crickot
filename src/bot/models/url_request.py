@@ -18,7 +18,7 @@ class UrlRequest:
 
         updateFields = self.update_mgr.get_update_fields(scorecard)
         if updateFields:
-            embed["fields"].append(updateFields)
+            embed["fields"].extend(updateFields)
         return discord.Embed.from_dict(embed)
 
     def __init__(self, url):

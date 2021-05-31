@@ -18,10 +18,15 @@ class WicketUpdate:
         return wickets, dismissedBatters
 
     def __init__(self, initialScorecard):
+        print("Initialized wicket update")
         self.prevWickets, self.prevDismissedBatters = WicketUpdate.getWicketDetails(initialScorecard)
+        print(self.prevWickets, self.prevDismissedBatters, sep = "\n")
     
     def get_embed_fields(self, newScorecard):
+        print("Get embed fields called")
         newWickets, newDismissedBatters = WicketUpdate.getWicketDetails(newScorecard)
+        print(newWickets)
+        print(newDismissedBatters)
         if newWickets == self.prevWickets:
             return None
         dismissedBattersDiff = list(set(newDismissedBatters) - set(self.prevDismissedBatters))
@@ -30,5 +35,20 @@ class WicketUpdate:
         for batter in dismissedBattersDiff:
             embedFieldDict = {"name": "Wicket!", "value": f"{str(batter)}"}
             fieldList.append(embedFieldDict)
-        
+
+        print(fieldList)
         return fieldList
+
+    # def get_embed_fields(self, newScorecard):
+    #     dummyFieldList = [
+    #         {
+    #             "name": "Dummy field",
+    #             "value": "Dummy value"
+    #         },
+    #         {
+    #             "name": "Another dummy field",
+    #             "value": "I am bored"
+    #         }
+    #     ]
+    #     print("Get embed field called")
+    #     return dummyFieldList
