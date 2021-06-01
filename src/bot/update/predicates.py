@@ -6,6 +6,7 @@ SETTINGS = Settings.get_settings()
 
 class Predicates:
     batterPredicateDict = {}
+    bowlerPredicateDict = {}
 
     @classmethod
     def load_predicates(cls):
@@ -16,6 +17,7 @@ class Predicates:
         cls.batterPredicateDict[wicketPredicate] = wicketPredicateEmbedField
 
         cls.load_batter_run_milestones()
+        cls.load_bowler_wicket_milestones()
     
     @classmethod
     def get_predicates(cls):
@@ -42,28 +44,22 @@ class Predicates:
 
             cls.batterPredicateDict[milestonePredicate] = milestoneEmbedField
 
-# class TestBatter:
 
-#     def __init__(self, runs):
-#         self.runs = runs
+    @staticmethod
+    def get_bowler_lambda(milestoneWickets):
+        return lambda bowler: int(bowler.wickets) > milestoneWickets
+    
+    @staticmethod
+    def get_bowler_embed(milestoneWickets):
+        return lambda bowler: {"name": f"{milestoneWickets} - fer!", "value": f"{milestoneRuns} wickets for {bowler.name}"}
 
-# def main():
-#     batPredicates = Predicates.get_predicates()
-#     for predicate in batPredicates.keys():
-#         print(predicate(TestBatter(9)))
-#         print(predicate(TestBatter(19)))
-#         print(predicate(TestBatter(29)))
+    @classmethod
+    def load_bowler_wicket_milestones(cls):
+        milestoneList = SETTINGS["bowlerWicketMilestones"]
 
+        for milestone in milestoneList:
+            milestonePredicate = cls.get_bowler_lambda(milestone)
+            milestoneEmbedField = cls.get_bowler_embed(milestone)
 
-
-    # TODO
-    # @classmethod
-    # def load_bowler_wicket_milestones(cls):
-    #     milestoneList = SETTINGS["bowlerRunMilestones"]
-
-    #     for milestone in milestoneList:
-    #         milestonePredicate = lambda batter: batter.runs > milestone
-    #         milestoneEmbedField = lambda batter: {"name": f"{milestone}!", "value": f"{milestone} up for {batter.name}"}
-
-    #         batterPredicateDict[milestonePredicate] = milestoneEmbedField
+            cls.bowlerPredicateDict[milestonePredicate] = milestoneEmbedField
 

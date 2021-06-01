@@ -12,6 +12,8 @@ from src.bot.models.url_request import UrlRequest
 
 from src.config import Settings
 
+import traceback
+
 SETTINGS = Settings.get_settings()
 
 # Cog for live Matches
@@ -107,12 +109,18 @@ class LiveMatch(commands.Cog):
         await new_url_req.append(curChannel)
         self.url_requests.append(new_url_req)
 
-    # @tasks.loop(minutes = SETTINGS["taskLoopMinutes"])
-    @tasks.loop(seconds = 20)
+    @tasks.loop(minutes = SETTINGS["taskLoopMinutes"])
+    # @tasks.loop(seconds = 20)
     async def update_alerts(self):
         await self.bot.wait_until_ready()
-        for url_req in self.url_requests:
-            await url_req.query_and_update()
+        try:
+            for url_req in self.url_requests:
+                await url_req.query_and_update()
+        except Exception as e:
+            errorFilePath = "/home/ubuntu/Crickot/Crickot/error.log"
+            f = open(errorFilePath, "a")
+            traceback.print_exc(file = f)
+            f.close()
         
 
 

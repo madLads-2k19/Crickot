@@ -1,10 +1,12 @@
+# A class to represent a batter in the scorecard
+
 class ScorecardBatter:
 
     def __init__(self, batterRow):
         batterCols = batterRow.find_all("td")
         self.name = batterCols[0].text
 
-        self.dismissDetail = batterCols[1].text
+        self.dismissDetail = batterCols[1].text.strip()
 
         self.dismissed = False if self.dismissDetail == "not out" else True
 
@@ -12,8 +14,6 @@ class ScorecardBatter:
 
         self.balls_faced = batterCols[3].text
 
-        print(self)
-    
     def __eq__(self, other):
         return self.name == other.name
 
