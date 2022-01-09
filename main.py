@@ -1,17 +1,35 @@
+from discord.ext import commands
 import discord
-# import os
-client = discord.Client()
+from dotenv import load_dotenv
+load_dotenv()
+import os
 
-@client.event
-async def on_ready():
-    print('We have logged in as {0.user}'.format(client))
+from src.config import Settings
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+from src.bot.cogs.livematch import LiveMatch
 
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+class Crickot(commands.Bot):
 
-client.run('ODM4NDEwOTExNTU1MjU2MzYx.YI6tAg.B_yRZKP0KUhJG5dPP4Y5jEybVh0')
+    def __init__(self):
+        super().__init__(command_prefix = '$')
+    
+    async def on_ready(self):
+        print("Crickot is up!")
+    
+    # @commands.command()
+    async def re(self):
+        self.unload_extension("src.bot.livematch")
+        self.load_extension("src.bot.livematch")
+
+bot = Crickot()
+
+@bot.command()
+async def re(ctx):
+    bot.unload_extension("src.bot.cogs.livematch")
+    bot.load_extension("src.bot.cogs.livematch")
+
+if __name__ == "__main__":
+    for cog in Settings.get_settings()["cogNames"]:
+        bot.load_extension(cog)
+
+    bot.run(os.getenv("BOT_TOKEN"))
